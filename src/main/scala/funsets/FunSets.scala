@@ -19,30 +19,30 @@ object FunSets {
   /**
    * Returns the set of the one given element.
    */
-  def singletonSet(elem: Int): Set = (newElem: Int) => newElem == elem
+  def singletonSet(elem: Int): Set = (_ == elem)
 
   /**
    * Returns the union of the two given sets,
    * the sets of all elements that are in either `s` or `t`.
    */
-  def union(s: Set, t: Set): Set = (e: Int) => contains(t, e) || contains(s, e)
+  def union(s: Set, t: Set): Set = (e: Int) => s(e) || t(e)
 
   /**
    * Returns the intersection of the two given sets,
    * the set of all elements that are both in `s` and `t`.
    */
-  def intersect(s: Set, t: Set): Set = (e: Int) => contains(t, e) && contains(s, e)
+  def intersect(s: Set, t: Set): Set = (e: Int) => t(e) && s(e)
 
   /**
    * Returns the difference of the two given sets,
    * the set of all elements of `s` that are not in `t`.
    */
-  def diff(s: Set, t: Set): Set = (e: Int) => contains(s, e) && !contains(t, e)
+  def diff(s: Set, t: Set): Set = (e: Int) => s(e) && !t(e)
 
   /**
    * Returns the subset of `s` for which `p` holds.
    */
-  def filter(s: Set, p: Int => Boolean): Set = intersect(s, p)
+  def filter(s: Set, p: Int => Boolean): Set = (e: Int) => s(e) && p(e)
 
 
   /**
@@ -55,25 +55,18 @@ object FunSets {
    */
   def forall(s: Set, p: Int => Boolean): Boolean = {
     def iter(a: Int): Boolean = {
-      if (contains(diff(s, p), a)) false
-      else if (a == 1000) true
+      if (a > bound) true
+      else if (contains(s, a) && !p(a)) false
       else iter(a + 1)
     }
-    iter(-1000)
+    iter(-bound)
   }
 
   /**
    * Returns whether there exists a bounded integer within `s`
    * that satisfies `p`.
    */
-  def exists(s: Set, p: Int => Boolean): Boolean = {
-    def iter(a: Int): Boolean = {
-      if (contains(intersect(s, p), a)) false
-      else if (a == 1000) true
-      else iter(a + 1)
-    }
-    iter(-1000)
-  }
+  def exists(s: Set, p: Int => Boolean): Boolean = !forall(s, (x => !p(x)))
 
   /**
    * Returns a set transformed by applying `f` to each element of `s`.
